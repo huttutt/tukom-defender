@@ -265,7 +265,7 @@ When making engine- or project-wide configuration changes (e.g. Project Settings
 
 When using an assistant to modify this repo:
 
-1. **Never edit directly on `main` or `develop`.**  
+1. **Never edit directly on `main` or `develop`.**
    Always:
    - Checkout `develop`.
    - Create or switch to a `feature/*`, `bugfix/*`, `chore/*`, `release/*`, or `hotfix/*` branch.
@@ -288,7 +288,13 @@ When using an assistant to modify this repo:
 
 5. Commit messages must follow the rules in section 4.
 
-6. Open a PR with a proper description and wait for review.
+6. Push feature branch to remote for tracking.
+
+7. **Merging to `develop` and `main`:**
+   - The assistant may merge feature branches to `develop` locally when work is complete.
+   - The assistant may merge `develop` to `main` locally when explicitly requested by the user.
+   - All merges and pushes to remote should be performed **only at the user's explicit request**.
+   - After merging, always push changes to remote and clean up merged branches.
 
 ---
 
