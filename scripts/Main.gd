@@ -183,24 +183,105 @@ func _on_fire_button_pressed() -> void:
 	if not tukom_ui.is_ready():
 		return
 
-	# Get target tile from Tukom UI
-	var target: Vector2i = tukom_ui.get_target_tile()
-	if target.x < 0 or target.y < 0:
-		return
-
 	# Consume ammo
 	ammo -= 1
 
-	# Fire at target with 3x3 AOE
-	# For Phase 1-2, we use standard scoring (1 point per hit)
-	# Phase 5 will add perfect alignment detection for 10x scoring
-	_fire_at_target(target, false)
+	# Calculate shot landing position from bearing and distance
+	var shot_world_pos: Vector2 = _calculate_shot_position()
+	var shot_tile: Vector2i = map.world_to_grid(shot_world_pos)
+
+	# Check for perfect alignment (bearing line passes through original target)
+	var original_target: Vector2i = tukom_ui.get_target_tile()
+	var target_world_pos: Vector2 = map.grid_to_world(original_target)
+	var is_perfect: bool = bearing_line.check_alignment_with_target(target_world_pos)
+
+	# Fire at calculated position with delay
+	_fire_with_delay(shot_tile, is_perfect)
 
 	# Reset Tukom UI (triggers fire_command_reset signal)
 	tukom_ui.reset_after_fire()
 
 	# Update UI
 	_update_ui()
+
+
+## Calculates shot landing position from observer, bearing, and distance
+func _calculate_shot_position() -> Vector2:
+	var bearing_angle: float = bearing_line.get_angle()
+	var distance_meters: int = tukom_ui.current_distance
+
+	# Convert distance from meters to world coordinates
+	# 1 tile = 50 meters (from GameConfig/DistanceArcs)
+	var distance_pixels: float = (distance_meters / 50.0) * GameConfig.TILE_SIZE
+
+	# Calculate shot position from observer icon
+	var direction: Vector2 = Vector2.RIGHT.rotated(bearing_angle)
+	var shot_pos: Vector2 = observer_icon.global_position + direction * distance_pixels
+
+	return shot_pos
+
+
+## Fires artillery with random delay and visual effect
+func _fire_with_delay(target_tile: Vector2i, is_perfect: bool) -> void:
+	# Random delay between 100ms and 500ms
+	var delay: float = randf_range(0.1, 0.5)
+
+	# Wait for delay, then show impact and apply damage
+	await get_tree().create_timer(delay).timeout
+
+	# Calculate impact world position
+	var impact_world_pos: Vector2 = map.grid_to_world(target_tile)
+
+	# Create visual impact effect
+	_show_impact_effect(impact_world_pos)
+
+	# Apply damage to entities in 3x3 grid
+	_fire_at_target(target_tile, is_perfect)
+
+
+## Shows flashing white circle impact effect
+func _show_impact_effect(world_pos: Vector2) -> void:
+	# Create a white circle sprite
+	var impact_circle: Node2D = Node2D.new()
+	impact_circle.position = world_pos
+	add_child(impact_circle)
+
+	# Create visual representation (white circle)
+	var sprite: Sprite2D = Sprite2D.new()
+	sprite.texture = _create_circle_texture(GameConfig.TILE_SIZE)
+	sprite.modulate = Color.WHITE
+	impact_circle.add_child(sprite)
+
+	# Create flashing animation (3 flashes over 0.6 seconds)
+	var tween: Tween = create_tween()
+	tween.tween_property(sprite, "modulate:a", 0.0, 0.1)
+	tween.tween_property(sprite, "modulate:a", 1.0, 0.1)
+	tween.tween_property(sprite, "modulate:a", 0.0, 0.1)
+	tween.tween_property(sprite, "modulate:a", 1.0, 0.1)
+	tween.tween_property(sprite, "modulate:a", 0.0, 0.1)
+	tween.tween_property(sprite, "modulate:a", 1.0, 0.1)
+
+	# Remove after animation completes
+	tween.finished.connect(func(): impact_circle.queue_free())
+
+
+## Creates a circular texture for impact effect
+func _create_circle_texture(diameter: float) -> ImageTexture:
+	var size: int = int(diameter)
+	var image: Image = Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var center: Vector2 = Vector2(size / 2.0, size / 2.0)
+	var radius: float = diameter / 2.0
+
+	# Draw white circle
+	for x in range(size):
+		for y in range(size):
+			var dist: float = Vector2(x, y).distance_to(center)
+			if dist <= radius:
+				image.set_pixel(x, y, Color.WHITE)
+			else:
+				image.set_pixel(x, y, Color(0, 0, 0, 0))  # Transparent
+
+	return ImageTexture.create_from_image(image)
 
 
 ## Fires artillery at target position with 3x3 AOE damage

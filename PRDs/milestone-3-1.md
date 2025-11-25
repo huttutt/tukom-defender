@@ -3,9 +3,9 @@
 ## Current Status
 
 **Last Updated**: 2025-11-25
-**Branch**: `feature/milestone-3-tukom-mechanics`
-**Completed Phases**: 1-4 (UI, Coordinates, Bearing, Distance)
-**Next Phase**: Phase 5 (Perfect Alignment & FIRE Execution)
+**Branch**: `feature/milestone-3-fire-execution`
+**Completed Phases**: 1-5 (UI, Coordinates, Bearing, Distance, FIRE)
+**Next Phase**: Phase 6 (Visual Polish & Testing)
 
 ### What Works Now
 - ✅ Tukom Generator UI displayed at bottom of screen with doctrinal layout
@@ -22,14 +22,19 @@
 - ✅ Piiru calculation (6000 mils system) updates in real-time
 - ✅ Perfect alignment detection logic implemented
 - ✅ **Distance wheel with up/down arrows**
-- ✅ **25m increment steps (0m to 2000m range)**
+- ✅ **50m increment steps (0m to 1500m range with wraparound)**
 - ✅ **Mouse wheel scroll support for distance adjustment**
+- ✅ **Distance arcs at 250m intervals for visual reference**
 - ✅ **Distance displays in yellow text matching UI style**
 - ✅ **Buttons disabled at min/max limits**
+- ✅ **FIRE button enabled when all fields set**
+- ✅ **Shot landing position calculated from bearing + distance**
+- ✅ **Random delay (100-500ms) before impact**
+- ✅ **Flashing white circle visual effect for impact**
+- ✅ **3x3 grid damage applied at calculated position**
+- ✅ **Perfect alignment bonus: 10 points when bearing passes through target**
 
 ### What's Not Yet Implemented
-- ⏳ FIRE button enablement when all fields set (Phase 5)
-- ⏳ Perfect alignment bonus scoring execution (Phase 5)
 - ⏳ Visual polish and testing (Phase 6)
 
 ---
@@ -558,11 +563,11 @@ func reset_after_fire():
 2. **Phase 2**: Coordinate Selection & Display (1-2 hours) ✅ **COMPLETED**
 3. **Phase 3**: Bearing Line & Piiru System (3-4 hours) ✅ **COMPLETED**
 4. **Phase 4**: Distance Wheel & Manual Entry (1-2 hours) ✅ **COMPLETED**
-5. **Phase 5**: Perfect Alignment & FIRE Execution (2-3 hours) ⏳ **PENDING**
+5. **Phase 5**: Perfect Alignment & FIRE Execution (2-3 hours) ✅ **COMPLETED**
 6. **Phase 6**: Visual Polish & Testing (2-3 hours) ⏳ **PENDING**
 
 **Total Estimated Effort**: 11-17 hours
-**Completed So Far**: ~9-11 hours (Phases 1-4)
+**Completed So Far**: ~11-14 hours (Phases 1-5)
 
 ---
 
