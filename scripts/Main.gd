@@ -61,6 +61,13 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			print("DEBUG INPUT: Mouse click detected at screen pos: ", event.position)
+
+			# Check if click is on the FIRE button - if so, ignore (button will handle it)
+			var button_rect: Rect2 = fire_button.get_global_rect()
+			if button_rect.has_point(event.position):
+				print("DEBUG INPUT: Click is on FIRE button, ignoring for marker placement")
+				return
+
 			# Use global mouse position to account for viewport/camera transforms
 			var mouse_pos: Vector2 = get_global_mouse_position()
 			print("DEBUG INPUT: Global mouse position: ", mouse_pos)
