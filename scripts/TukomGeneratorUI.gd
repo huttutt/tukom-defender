@@ -23,7 +23,7 @@ var current_distance: int = 0
 # Node references (will be connected in _ready)
 @onready var coord_label: Label = $Panel/HBoxContainer/CoordLabel
 @onready var piiru_button: Button = $Panel/HBoxContainer/PiiruButton
-@onready var distance_label: Label = $Panel/HBoxContainer/DistanceLabel
+@onready var distance_wheel: Control = $Panel/HBoxContainer/DistanceWheel
 @onready var fire_button: Button = $Panel/HBoxContainer/FireButton
 @onready var add_bearing_prompt: Button = $Panel/HBoxContainer/AddBearingPrompt
 
@@ -44,6 +44,9 @@ func _ready() -> void:
 	# Connect add bearing prompt button
 	add_bearing_prompt.pressed.connect(_on_add_bearing_prompt_pressed)
 
+	# Connect distance wheel signal
+	distance_wheel.distance_changed.connect(_on_distance_changed)
+
 	# Connect bearing lock/unlock signals (will be emitted by BearingLine)
 	bearing_locked.connect(_on_bearing_locked)
 	bearing_unlocked.connect(_on_bearing_unlocked)
@@ -55,7 +58,7 @@ func _reset_ui() -> void:
 	piiru_button.text = ""
 	piiru_button.visible = true
 	add_bearing_prompt.visible = false
-	distance_label.text = ""
+	distance_wheel.reset()
 	fire_button.disabled = true
 	state = State.IDLE
 
@@ -132,10 +135,9 @@ func _activate_bearing_line() -> void:
 	bearing_line_activated.emit()
 
 
-## Updates distance display (will be called by DistanceWheel in Phase 4)
-func set_distance(distance: int) -> void:
-	current_distance = distance
-	distance_label.text = "%dm" % distance
+## Called when distance wheel value changes
+func _on_distance_changed(new_distance: int) -> void:
+	current_distance = new_distance
 	_check_ready_state()
 
 
@@ -164,7 +166,7 @@ func reset_after_fire() -> void:
 
 	coord_label.text = ""
 	piiru_button.text = ""
-	distance_label.text = ""
+	distance_wheel.reset()
 
 	state = State.IDLE
 	fire_button.disabled = true
