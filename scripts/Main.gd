@@ -130,30 +130,45 @@ func _fire_at_marker() -> void:
 	print("DEBUG: Crate count: ", crate_container.get_child_count())
 
 	# Apply damage to all entities in affected tiles
-	for tile in affected_tiles:
-		# Damage enemies
-		for enemy in enemy_container.get_children():
-			var enemy_tile: Vector2i = map.world_to_grid(enemy.position)
-			print("DEBUG: Enemy at tile ", enemy_tile, " checking against ", tile)
-			if enemy_tile == tile:
-				print("DEBUG: HIT! Damaging enemy at ", tile)
-				if enemy.has_method("take_damage"):
-					var was_destroyed: bool = enemy.take_damage(1)
-					if was_destroyed:
-						score += 1
-						print("DEBUG: Enemy destroyed, score now: ", score)
+	# Build list of entities to damage (avoid modifying containers while iterating)
+	var enemies_to_damage: Array = []
+	var crates_to_damage: Array = []
 
-		# Damage crates
+	for tile in affected_tiles:
+		var tile_world_pos: Vector2 = map.grid_to_world(tile)
+		var tile_half_size: float = GameConfig.TILE_SIZE / 2.0
+
+		# Check enemies - use distance check instead of exact tile match
+		for enemy in enemy_container.get_children():
+			# Check if enemy position is within tile bounds
+			var dist: float = enemy.position.distance_to(tile_world_pos)
+			if dist < tile_half_size and enemy not in enemies_to_damage:
+				enemies_to_damage.append(enemy)
+				print("DEBUG: Enemy at ", enemy.position, " is within tile ", tile, " (dist: ", dist, ")")
+
+		# Check crates
 		for crate in crate_container.get_children():
-			var crate_tile: Vector2i = map.world_to_grid(crate.position)
-			print("DEBUG: Crate at tile ", crate_tile, " checking against ", tile)
-			if crate_tile == tile:
-				print("DEBUG: HIT! Damaging crate at ", tile)
-				if crate.has_method("take_damage"):
-					var was_destroyed: bool = crate.take_damage(1)
-					if was_destroyed:
-						ammo += GameConfig.AMMO_PER_CRATE
-						print("DEBUG: Crate destroyed, ammo now: ", ammo)
+			var dist: float = crate.position.distance_to(tile_world_pos)
+			if dist < tile_half_size and crate not in crates_to_damage:
+				crates_to_damage.append(crate)
+				print("DEBUG: Crate at ", crate.position, " is within tile ", tile, " (dist: ", dist, ")")
+
+	# Apply damage to all hit entities
+	print("DEBUG: Damaging ", enemies_to_damage.size(), " enemies and ", crates_to_damage.size(), " crates")
+
+	for enemy in enemies_to_damage:
+		if enemy.has_method("take_damage"):
+			var was_destroyed: bool = enemy.take_damage(1)
+			if was_destroyed:
+				score += 1
+				print("DEBUG: Enemy destroyed, score now: ", score)
+
+	for crate in crates_to_damage:
+		if crate.has_method("take_damage"):
+			var was_destroyed: bool = crate.take_damage(1)
+			if was_destroyed:
+				ammo += GameConfig.AMMO_PER_CRATE
+				print("DEBUG: Crate destroyed, ammo now: ", ammo)
 
 
 ## Clears the marker and resets UI
