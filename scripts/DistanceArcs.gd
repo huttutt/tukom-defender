@@ -7,9 +7,9 @@ extends Node2D
 # Arc settings
 const ARC_INTERVAL_METERS: int = 250  # Distance between arcs
 const METERS_PER_TILE: float = 10.0  # 1 tile = 10 meters
-const ARC_COLOR: Color = Color.BLACK
-const ARC_WIDTH: float = 1.0
-const LABEL_COLOR: Color = Color.BLACK
+const ARC_COLOR: Color = Color(0, 0, 0, 1)  # Black
+const ARC_WIDTH: float = 2.0  # Make more visible
+const LABEL_COLOR: Color = Color(0, 0, 0, 1)  # Black
 const MAX_DISTANCE: int = 2000  # Maximum arc distance
 
 # State
@@ -31,7 +31,9 @@ func activate(observer_position: Vector2) -> void:
 	origin = observer_position
 	is_active = true
 	visible = true
+	print("DistanceArcs: Activating at position ", origin)
 	_draw_arcs()
+	print("DistanceArcs: Drew ", arc_lines.size(), " arc lines")
 
 
 ## Deactivates distance arcs display
@@ -65,20 +67,23 @@ func _draw_arc_segment(radius: float, distance_meters: int, viewport_size: Vecto
 	var arc_line: Line2D = Line2D.new()
 	arc_line.width = ARC_WIDTH
 	arc_line.default_color = ARC_COLOR
-	arc_line.z_index = -2  # Behind everything except map
+	arc_line.z_index = 10  # Draw above map and markers
 
 	# Calculate arc points
 	# We want the arc to span from left edge to right edge of screen
 	var points: PackedVector2Array = _calculate_arc_points(radius, viewport_size)
 
-	for point in points:
-		arc_line.add_point(point)
+	if points.size() > 0:
+		for point in points:
+			arc_line.add_point(point)
 
-	add_child(arc_line)
-	arc_lines.append(arc_line)
+		add_child(arc_line)
+		arc_lines.append(arc_line)
 
-	# Add distance label at center-top of arc
-	_add_arc_label(radius, distance_meters, viewport_size)
+		# Add distance label at center-top of arc
+		_add_arc_label(radius, distance_meters, viewport_size)
+	else:
+		print("DistanceArcs: No points generated for radius ", radius)
 
 
 ## Calculates points for an arc spanning screen width
@@ -132,7 +137,7 @@ func _add_arc_label(radius: float, distance_meters: int, viewport_size: Vector2)
 	label.add_theme_font_size_override("font_size", 14)
 	label.add_theme_color_override("font_color", LABEL_COLOR)
 	label.position = Vector2(center_x - 20, label_y)  # Center approximately
-	label.z_index = -1
+	label.z_index = 11  # Above arc lines
 
 	add_child(label)
 	arc_labels.append(label)
