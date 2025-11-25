@@ -22,23 +22,29 @@ var current_distance: int = 0
 
 # Node references (will be connected in _ready)
 @onready var coord_label: Label = $Panel/HBoxContainer/CoordLabel
-@onready var piiru_label: Label = $Panel/HBoxContainer/PiiruLabel
+@onready var piiru_button: Button = $Panel/HBoxContainer/PiiruButton
 @onready var distance_label: Label = $Panel/HBoxContainer/DistanceLabel
 @onready var fire_button: Button = $Panel/HBoxContainer/FireButton
 
 # Reference to Map node (set by Main.gd)
 var map: Node2D = null
 
+# Reference to BearingLine node (set by Main.gd)
+var bearing_line: Node2D = null
+
 
 func _ready() -> void:
 	# Initialize UI state
 	_reset_ui()
 
+	# Connect piiru button
+	piiru_button.pressed.connect(_on_piiru_button_pressed)
+
 
 ## Resets all fields to initial state
 func _reset_ui() -> void:
 	coord_label.text = ""
-	piiru_label.text = ""
+	piiru_button.text = ""
 	distance_label.text = ""
 	fire_button.disabled = true
 	state = State.IDLE
@@ -63,13 +69,30 @@ func set_target_coordinates(tile: Vector2i) -> void:
 	target_coordinates_set.emit(tile)
 
 
-## Updates piiru display (will be called by BearingLine in Phase 3)
+## Updates piiru display (called by BearingLine during drag)
 func set_piiru(piiru: int) -> void:
 	current_piiru = piiru
 	var xx: int = piiru / 100
 	var yy: int = piiru % 100
-	piiru_label.text = "%02d-%02d" % [xx, yy]
+	piiru_button.text = "%02d-%02d" % [xx, yy]
 	_check_ready_state()
+
+
+## Called when piiru button is pressed - activates bearing line
+func _on_piiru_button_pressed() -> void:
+	if bearing_line == null:
+		push_error("TukomGeneratorUI: BearingLine reference not set")
+		return
+
+	# Only activate if coordinates are set
+	if target_tile.x < 0 or target_tile.y < 0:
+		return
+
+	# Activate bearing line for dragging
+	bearing_line.activate()
+
+	# Emit signal for Main to handle
+	bearing_line_activated.emit()
 
 
 ## Updates distance display (will be called by DistanceWheel in Phase 4)
@@ -103,11 +126,15 @@ func reset_after_fire() -> void:
 	current_distance = 0
 
 	coord_label.text = ""
-	piiru_label.text = ""
+	piiru_button.text = ""
 	distance_label.text = ""
 
 	state = State.IDLE
 	fire_button.disabled = true
+
+	# Deactivate bearing line
+	if bearing_line != null:
+		bearing_line.deactivate()
 
 	# Emit signal for Main to clear target marker
 	fire_command_reset.emit()
@@ -127,3 +154,4 @@ func is_ready() -> bool:
 signal target_coordinates_set(tile: Vector2i)
 signal fire_command_reset()
 signal fire_button_pressed()
+signal bearing_line_activated()

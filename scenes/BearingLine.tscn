@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://d2k8n5xap7qrx"]
+
+[ext_resource type="Script" path="res://scripts/BearingLine.gd" id="1_bearing_line_script"]
+
+[node name="BearingLine" type="Node2D"]
+script = ExtResource("1_bearing_line_script")

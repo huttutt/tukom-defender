@@ -22,6 +22,7 @@ var marker_node: Node2D = null
 @onready var enemy_container: Node2D = $EnemyContainer
 @onready var crate_container: Node2D = $CrateContainer
 @onready var observer_icon: Node2D = $ObserverIcon
+@onready var bearing_line: Node2D = $BearingLine
 @onready var ammo_label: Label = $UI/AmmoLabel
 @onready var score_label: Label = $UI/ScoreLabel
 @onready var tukom_ui: Control = $UI/TukomGeneratorUI
@@ -47,14 +48,20 @@ func _ready() -> void:
 	# Position observer icon
 	_position_observer_icon()
 
-	# Connect Tukom UI to Map reference
+	# Connect Tukom UI to Map and BearingLine references
 	tukom_ui.map = map
+	tukom_ui.bearing_line = bearing_line
+
+	# Connect BearingLine to TukomGeneratorUI
+	bearing_line.tukom_ui = tukom_ui
+	bearing_line.set_origin(observer_icon.global_position)
 
 	# Connect signals
 	enemy_spawn_timer.timeout.connect(_on_enemy_spawn_timer_timeout)
 	crate_spawn_timer.timeout.connect(_on_crate_spawn_timer_timeout)
 	tukom_ui.target_coordinates_set.connect(_on_target_coordinates_set)
 	tukom_ui.fire_command_reset.connect(_on_fire_command_reset)
+	tukom_ui.bearing_line_activated.connect(_on_bearing_line_activated)
 
 	# Connect FIRE button from TukomGeneratorUI
 	var fire_button: Button = tukom_ui.get_node("Panel/HBoxContainer/FireButton")
@@ -131,6 +138,12 @@ func _on_target_coordinates_set(tile: Vector2i) -> void:
 ## Called when fire command is reset (after firing)
 func _on_fire_command_reset() -> void:
 	_clear_marker()
+
+
+## Called when bearing line is activated
+func _on_bearing_line_activated() -> void:
+	# Update bearing line origin in case observer icon moved
+	bearing_line.set_origin(observer_icon.global_position)
 
 
 ## Handles FIRE button press
