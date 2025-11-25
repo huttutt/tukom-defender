@@ -1,5 +1,30 @@
 # Milestone 3.1: Tukom Generator Integration - Phased Implementation Plan
 
+## Current Status
+
+**Last Updated**: 2025-11-25
+**Branch**: `feature/milestone-3-tukom-mechanics`
+**Completed Phases**: 1-2 (UI Foundation & Coordinate Selection)
+**Next Phase**: Phase 3 (Bearing Line & Piiru System)
+
+### What Works Now
+- ✅ Tukom Generator UI displayed at bottom of screen with doctrinal layout
+- ✅ Observer icon positioned at bottom-center above UI
+- ✅ Map taps set coordinates without immediate firing
+- ✅ MGRS coordinates displayed in Tukom UI coord field
+- ✅ Target marker appears at selected tile
+- ✅ Static fields "3 kertaa" and "ampukaa!" always visible
+- ✅ FIRE button disabled (awaiting bearing/distance in Phases 3-4)
+
+### What's Not Yet Implemented
+- ⏳ Bearing line (orange-yellow line from observer)
+- ⏳ Piiru display (direction field)
+- ⏳ Distance wheel (25m increments)
+- ⏳ Perfect alignment detection
+- ⏳ FIRE button enablement when all fields set
+
+---
+
 ## Overview
 Replace the simple tap-to-fire mechanic with a structured Finnish artillery fire command (tulikomento) workflow. This implements indirect fire doctrine where the player acts as an observer calling coordinates, bearing, and distance to an off-map artillery unit.
 
@@ -520,14 +545,15 @@ func reset_after_fire():
 
 ## Implementation Order
 
-1. **Phase 1**: UI Foundation & Observer Icon (2-3 hours)
-2. **Phase 2**: Coordinate Selection & Display (1-2 hours)
-3. **Phase 3**: Bearing Line & Piiru System (3-4 hours)
-4. **Phase 4**: Distance Wheel & Manual Entry (1-2 hours)
-5. **Phase 5**: Perfect Alignment & FIRE Execution (2-3 hours)
-6. **Phase 6**: Visual Polish & Testing (2-3 hours)
+1. **Phase 1**: UI Foundation & Observer Icon (2-3 hours) ✅ **COMPLETED**
+2. **Phase 2**: Coordinate Selection & Display (1-2 hours) ✅ **COMPLETED**
+3. **Phase 3**: Bearing Line & Piiru System (3-4 hours) ⏳ **PENDING**
+4. **Phase 4**: Distance Wheel & Manual Entry (1-2 hours) ⏳ **PENDING**
+5. **Phase 5**: Perfect Alignment & FIRE Execution (2-3 hours) ⏳ **PENDING**
+6. **Phase 6**: Visual Polish & Testing (2-3 hours) ⏳ **PENDING**
 
 **Total Estimated Effort**: 11-17 hours
+**Completed So Far**: ~3-4 hours (Phases 1-2)
 
 ---
 
