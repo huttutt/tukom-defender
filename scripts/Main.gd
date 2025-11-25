@@ -23,6 +23,7 @@ var marker_node: Node2D = null
 @onready var crate_container: Node2D = $CrateContainer
 @onready var observer_icon: Node2D = $ObserverIcon
 @onready var bearing_line: Node2D = $BearingLine
+@onready var distance_arcs: Node2D = $DistanceArcs
 @onready var ammo_label: Label = $UI/AmmoLabel
 @onready var score_label: Label = $UI/ScoreLabel
 @onready var tukom_ui: Control = $UI/TukomGeneratorUI
@@ -63,6 +64,8 @@ func _ready() -> void:
 	tukom_ui.fire_command_reset.connect(_on_fire_command_reset)
 	tukom_ui.bearing_line_activated.connect(_on_bearing_line_activated)
 	tukom_ui.bearing_deselected.connect(_on_bearing_deselected)
+	tukom_ui.distance_phase_entered.connect(_on_distance_phase_entered)
+	tukom_ui.distance_phase_exited.connect(_on_distance_phase_exited)
 
 	# Connect FIRE button from TukomGeneratorUI
 	var fire_button: Button = tukom_ui.get_node("Panel/HBoxContainer/FireButton")
@@ -156,6 +159,18 @@ func _on_bearing_line_activated() -> void:
 func _on_bearing_deselected() -> void:
 	# Can add additional cleanup here if needed
 	pass
+
+
+## Called when distance selection phase is entered (bearing locked)
+func _on_distance_phase_entered() -> void:
+	# Show distance arcs for visual reference
+	distance_arcs.activate(observer_icon.global_position)
+
+
+## Called when distance selection phase is exited (bearing deselected)
+func _on_distance_phase_exited() -> void:
+	# Hide distance arcs
+	distance_arcs.deactivate()
 
 
 ## Handles FIRE button press

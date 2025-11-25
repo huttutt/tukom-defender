@@ -59,6 +59,7 @@ func _reset_ui() -> void:
 	piiru_button.visible = true
 	add_bearing_prompt.visible = false
 	distance_wheel.reset()
+	distance_wheel.visible = false  # Hidden until bearing locked
 	fire_button.disabled = true
 	state = State.IDLE
 
@@ -210,14 +211,19 @@ func _deselect_bearing() -> void:
 	if bearing_line != null:
 		bearing_line.deactivate()
 
+	# Hide distance wheel (back to bearing selection)
+	distance_wheel.visible = false
+	distance_wheel.reset()
+
 	# Show prompt again
 	_show_add_bearing_prompt()
 
 	# Update state
 	_check_ready_state()
 
-	# Emit signal for Main
+	# Emit signals for Main
 	bearing_deselected.emit()
+	distance_phase_exited.emit()
 
 
 ## Called when bearing is locked (mouseup)
@@ -225,6 +231,12 @@ func _on_bearing_locked() -> void:
 	# Stop pulsating animation if any
 	add_bearing_prompt.visible = false
 	piiru_button.visible = true
+
+	# Enable distance wheel for distance selection
+	distance_wheel.visible = true
+
+	# Emit signal to show distance arcs
+	distance_phase_entered.emit()
 
 
 ## Called when bearing is unlocked (click line)
@@ -246,3 +258,5 @@ signal bearing_line_activated()
 signal bearing_locked()
 signal bearing_unlocked()
 signal bearing_deselected()
+signal distance_phase_entered()
+signal distance_phase_exited()

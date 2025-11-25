@@ -1,10 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://cr71v5fyuafpu"]
+[gd_scene load_steps=6 format=3 uid="uid://cr71v5fyuafpu"]
 
 [ext_resource type="Script" path="res://scripts/Main.gd" id="1_main_script"]
 [ext_resource type="PackedScene" uid="uid://ckmrwxo5jjf8w" path="res://scenes/Map.tscn" id="2_map_scene"]
 [ext_resource type="PackedScene" uid="uid://bx3k5h7j2m9wq" path="res://scenes/TukomGeneratorUI.tscn" id="3_tukom_ui_scene"]
 [ext_resource type="PackedScene" uid="uid://ch8k9w2n5j4tx" path="res://scenes/ObserverIcon.tscn" id="4_observer_icon_scene"]
 [ext_resource type="PackedScene" uid="uid://d2k8n5xap7qrx" path="res://scenes/BearingLine.tscn" id="5_bearing_line_scene"]
+[ext_resource type="PackedScene" path="res://scenes/DistanceArcs.tscn" id="6_distance_arcs_scene"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main_script")
@@ -18,6 +19,8 @@ script = ExtResource("1_main_script")
 [node name="ObserverIcon" parent="." instance=ExtResource("4_observer_icon_scene")]
 
 [node name="BearingLine" parent="." instance=ExtResource("5_bearing_line_scene")]
+
+[node name="DistanceArcs" parent="." instance=ExtResource("6_distance_arcs_scene")]
 
 [node name="UI" type="CanvasLayer" parent="."]
 
