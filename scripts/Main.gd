@@ -60,7 +60,9 @@ func _input(event: InputEvent) -> void:
 	# Handle left mouse button clicks for marker placement
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			_handle_marker_placement(event.position)
+			# Use global mouse position to account for viewport/camera transforms
+			var mouse_pos: Vector2 = get_global_mouse_position()
+			_handle_marker_placement(mouse_pos)
 
 
 ## Handles marker placement when player clicks on map
