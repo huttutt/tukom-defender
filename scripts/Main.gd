@@ -1,17 +1,21 @@
 extends Node2D
 
 ## Main.gd
-## Main game controller managing enemies, crates, shells, UI, and game state.
+## Main game controller managing enemies, crates, targeting system, UI, and game state.
 
 # Game state
 var ammo: int = GameConfig.INITIAL_AMMO
 var score: int = 0
 var is_game_over: bool = false
 
+# Marker state
+var marker_tile: Vector2i = Vector2i(-1, -1)  # Invalid tile when no marker
+var marker_node: Node2D = null
+
 # Scene references
 @export var enemy_scene: PackedScene
 @export var ammo_crate_scene: PackedScene
-@export var shell_scene: PackedScene
+@export var marker_scene: PackedScene
 
 # Node references
 @onready var map: Node2D = $Map
@@ -19,6 +23,8 @@ var is_game_over: bool = false
 @onready var crate_container: Node2D = $CrateContainer
 @onready var ammo_label: Label = $UI/AmmoLabel
 @onready var score_label: Label = $UI/ScoreLabel
+@onready var mgrs_label: Label = $UI/MGRSLabel
+@onready var fire_button: Button = $UI/FireButton
 @onready var game_over_panel: Control = $UI/GameOverPanel
 @onready var game_over_label: Label = $UI/GameOverPanel/GameOverLabel
 @onready var enemy_spawn_timer: Timer = $EnemySpawnTimer
@@ -31,16 +37,19 @@ func _ready() -> void:
 		enemy_scene = load("res://scenes/Enemy.tscn")
 	if ammo_crate_scene == null:
 		ammo_crate_scene = load("res://scenes/AmmoCrate.tscn")
-	if shell_scene == null:
-		shell_scene = load("res://scenes/Shell.tscn")
+	if marker_scene == null:
+		marker_scene = load("res://scenes/Marker.tscn")
 
 	# Initialize UI
 	game_over_panel.visible = false
+	mgrs_label.visible = false
+	fire_button.disabled = true
 	_update_ui()
 
-	# Connect timer signals
+	# Connect signals
 	enemy_spawn_timer.timeout.connect(_on_enemy_spawn_timer_timeout)
 	crate_spawn_timer.timeout.connect(_on_crate_spawn_timer_timeout)
+	fire_button.pressed.connect(_on_fire_button_pressed)
 
 
 func _input(event: InputEvent) -> void:
@@ -48,18 +57,14 @@ func _input(event: InputEvent) -> void:
 	if is_game_over:
 		return
 
-	# Handle left mouse button clicks
+	# Handle left mouse button clicks for marker placement
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			_handle_shot(event.position)
+			_handle_marker_placement(event.position)
 
 
-## Handles player firing a shell at screen position
-func _handle_shot(screen_pos: Vector2) -> void:
-	# Check if player has ammo
-	if ammo <= 0:
-		return
-
+## Handles marker placement when player clicks on map
+func _handle_marker_placement(screen_pos: Vector2) -> void:
 	# Convert screen position to tile coordinates
 	var tile: Vector2i = map.world_to_grid(screen_pos)
 
@@ -67,16 +72,89 @@ func _handle_shot(screen_pos: Vector2) -> void:
 	if not map.is_inside_map(tile):
 		return
 
+	# Remove old marker if exists
+	if marker_node != null:
+		marker_node.queue_free()
+		marker_node = null
+
+	# Create new marker
+	marker_tile = tile
+	marker_node = marker_scene.instantiate()
+	marker_node.position = map.grid_to_world(tile)
+	add_child(marker_node)
+
+	# Update UI
+	mgrs_label.text = map.tile_to_mgrs(tile)
+	mgrs_label.visible = true
+	fire_button.disabled = false
+
+
+## Handles FIRE button press
+func _on_fire_button_pressed() -> void:
+	# Check if player has ammo
+	if ammo <= 0:
+		return
+
+	# Check if marker exists
+	if marker_tile.x < 0 or marker_tile.y < 0:
+		return
+
 	# Consume ammo
 	ammo -= 1
+
+	# Fire at marker with 3x3 AOE
+	_fire_at_marker()
+
+	# Clear marker
+	_clear_marker()
+
+	# Update UI
 	_update_ui()
 
-	# Instantiate and configure shell
-	var shell: Node2D = shell_scene.instantiate()
-	shell.target_tile = tile
-	shell.main_ref = self
-	shell.position = map.grid_to_world(tile)
-	add_child(shell)
+
+## Fires artillery at marker position with 3x3 AOE damage
+func _fire_at_marker() -> void:
+	# Generate 3x3 tile area around marker
+	var affected_tiles: Array[Vector2i] = []
+
+	for dy in range(-1, 2):
+		for dx in range(-1, 2):
+			var tile: Vector2i = Vector2i(marker_tile.x + dx, marker_tile.y + dy)
+			if map.is_inside_map(tile):
+				affected_tiles.append(tile)
+
+	# Apply damage to all entities in affected tiles
+	for tile in affected_tiles:
+		# Damage enemies
+		for enemy in enemy_container.get_children():
+			var enemy_tile: Vector2i = map.world_to_grid(enemy.position)
+			if enemy_tile == tile:
+				if enemy.has_method("take_damage"):
+					enemy.take_damage(1)
+					# Increment score if enemy was destroyed
+					if enemy.hp <= 0:
+						score += 1
+
+		# Damage crates
+		for crate in crate_container.get_children():
+			var crate_tile: Vector2i = map.world_to_grid(crate.position)
+			if crate_tile == tile:
+				if crate.has_method("take_damage"):
+					crate.take_damage(1)
+					# Add ammo if crate was destroyed
+					if crate.hp <= 0:
+						ammo += GameConfig.AMMO_PER_CRATE
+
+
+## Clears the marker and resets UI
+func _clear_marker() -> void:
+	if marker_node != null:
+		marker_node.queue_free()
+		marker_node = null
+
+	marker_tile = Vector2i(-1, -1)
+	mgrs_label.visible = false
+	fire_button.disabled = true
 
 
 ## Spawns an enemy at a random top-row tile
@@ -123,38 +201,6 @@ func _on_crate_spawn_timer_timeout() -> void:
 	var crate: Node2D = ammo_crate_scene.instantiate()
 	crate.position = world_pos
 	crate_container.add_child(crate)
-
-
-## Resolves what entities are hit when a shell lands on a tile
-func resolve_shell_hit(tile: Vector2i) -> void:
-	var enemies_to_destroy: Array = []
-	var crates_to_destroy: Array = []
-
-	# Check all enemies
-	for enemy in enemy_container.get_children():
-		var enemy_tile: Vector2i = map.world_to_grid(enemy.position)
-		if enemy_tile == tile:
-			enemies_to_destroy.append(enemy)
-
-	# Check all crates
-	for crate in crate_container.get_children():
-		var crate_tile: Vector2i = map.world_to_grid(crate.position)
-		if crate_tile == tile:
-			crates_to_destroy.append(crate)
-
-	# Destroy enemies and update score
-	for enemy in enemies_to_destroy:
-		score += 1
-		enemy.queue_free()
-
-	# Destroy crates and add ammo
-	for crate in crates_to_destroy:
-		ammo += GameConfig.AMMO_PER_CRATE
-		crate.queue_free()
-
-	# Update UI after all changes
-	if enemies_to_destroy.size() > 0 or crates_to_destroy.size() > 0:
-		_update_ui()
 
 
 ## Called when an enemy reaches the bottom of the map
