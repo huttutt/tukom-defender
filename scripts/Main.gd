@@ -114,48 +114,49 @@ func _on_fire_button_pressed() -> void:
 
 ## Fires artillery at marker position with 3x3 AOE damage
 func _fire_at_marker() -> void:
-	# Generate 3x3 tile area around marker
-	var affected_tiles: Array[Vector2i] = []
-
 	print("DEBUG: Firing at marker tile: ", marker_tile)
 
-	for dy in range(-1, 2):
-		for dx in range(-1, 2):
-			var tile: Vector2i = Vector2i(marker_tile.x + dx, marker_tile.y + dy)
-			if map.is_inside_map(tile):
-				affected_tiles.append(tile)
+	# Calculate the bounding box of the 3x3 affected area in world coordinates
+	# Top-left tile of 3x3 grid
+	var min_tile: Vector2i = Vector2i(marker_tile.x - 1, marker_tile.y - 1)
+	var max_tile: Vector2i = Vector2i(marker_tile.x + 1, marker_tile.y + 1)
 
-	print("DEBUG: Affected tiles: ", affected_tiles)
+	# Clamp to map bounds
+	min_tile.x = max(0, min_tile.x)
+	min_tile.y = max(0, min_tile.y)
+	max_tile.x = min(GameConfig.MAP_WIDTH - 1, max_tile.x)
+	max_tile.y = min(GameConfig.MAP_HEIGHT - 1, max_tile.y)
+
+	# Convert to world coordinates (top-left and bottom-right corners of the AOE area)
+	var aoe_min: Vector2 = Vector2(min_tile.x * GameConfig.TILE_SIZE, min_tile.y * GameConfig.TILE_SIZE)
+	var aoe_max: Vector2 = Vector2((max_tile.x + 1) * GameConfig.TILE_SIZE, (max_tile.y + 1) * GameConfig.TILE_SIZE)
+
+	print("DEBUG: AOE bounding box: ", aoe_min, " to ", aoe_max)
 	print("DEBUG: Enemy count: ", enemy_container.get_child_count())
 	print("DEBUG: Crate count: ", crate_container.get_child_count())
 
-	# Apply damage to all entities in affected tiles
 	# Build list of entities to damage (avoid modifying containers while iterating)
 	var enemies_to_damage: Array = []
 	var crates_to_damage: Array = []
 
-	for tile in affected_tiles:
-		var tile_world_pos: Vector2 = map.grid_to_world(tile)
-		# Use full tile size plus a bit of margin to catch entities on tile edges
-		var hit_radius: float = GameConfig.TILE_SIZE * 0.7  # ~45 pixels for 64px tiles
-		print("DEBUG: Checking tile ", tile, " at world pos ", tile_world_pos, " (radius: ", hit_radius, ")")
+	# Check all enemies - any entity whose position is within the AOE box gets hit
+	for enemy in enemy_container.get_children():
+		var pos: Vector2 = enemy.position
+		print("DEBUG: Enemy at ", pos)
+		# Check if position is within bounding box
+		if pos.x >= aoe_min.x and pos.x <= aoe_max.x and \
+		   pos.y >= aoe_min.y and pos.y <= aoe_max.y:
+			enemies_to_damage.append(enemy)
+			print("DEBUG:   *** HIT! Enemy in AOE area")
 
-		# Check enemies - use distance check instead of exact tile match
-		for enemy in enemy_container.get_children():
-			# Check if enemy position is within tile bounds
-			var dist: float = enemy.position.distance_to(tile_world_pos)
-			print("DEBUG:   Enemy at ", enemy.position, " -> distance: ", dist, " (threshold: ", hit_radius, ")")
-			if dist < hit_radius and enemy not in enemies_to_damage:
-				enemies_to_damage.append(enemy)
-				print("DEBUG:   *** HIT! Enemy added to damage list")
-
-		# Check crates
-		for crate in crate_container.get_children():
-			var dist: float = crate.position.distance_to(tile_world_pos)
-			print("DEBUG:   Crate at ", crate.position, " -> distance: ", dist, " (threshold: ", hit_radius, ")")
-			if dist < hit_radius and crate not in crates_to_damage:
-				crates_to_damage.append(crate)
-				print("DEBUG:   *** HIT! Crate added to damage list")
+	# Check all crates
+	for crate in crate_container.get_children():
+		var pos: Vector2 = crate.position
+		print("DEBUG: Crate at ", pos)
+		if pos.x >= aoe_min.x and pos.x <= aoe_max.x and \
+		   pos.y >= aoe_min.y and pos.y <= aoe_max.y:
+			crates_to_damage.append(crate)
+			print("DEBUG:   *** HIT! Crate in AOE area")
 
 	# Apply damage to all hit entities
 	print("DEBUG: Damaging ", enemies_to_damage.size(), " enemies and ", crates_to_damage.size(), " crates")
