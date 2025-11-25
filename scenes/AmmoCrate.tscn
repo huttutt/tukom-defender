@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://bfwqvj5p2mbqm"]
+
+[ext_resource type="Script" path="res://scripts/AmmoCrate.gd" id="1_crate_script"]
+[ext_resource type="Texture2D" uid="uid://bev85po3gjbr2" path="res://assets/placeholders/ammo_crate_placeholder.png" id="2_crate_texture"]
+
+[node name="AmmoCrate" type="Node2D"]
+script = ExtResource("1_crate_script")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_crate_texture")
