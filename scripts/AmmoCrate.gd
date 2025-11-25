@@ -1,13 +1,21 @@
 extends Node2D
 
 ## AmmoCrate.gd
-## Ammo crate that can be destroyed by shells to replenish player ammunition.
+## Ammo crate with HP system that can be destroyed by shells to replenish player ammunition.
 
 # Signal emitted when crate is destroyed
 signal crate_destroyed(crate: Node2D)
 
+# Hit points
+@export var hp: int = 1
 
-## Destroys this crate, emitting signal and removing from scene
-func destroy() -> void:
-	crate_destroyed.emit(self)
-	queue_free()
+
+## Takes damage and destroys if HP reaches 0
+## Returns true if entity was destroyed
+func take_damage(amount: int) -> bool:
+	hp -= amount
+	if hp <= 0:
+		crate_destroyed.emit(self)
+		queue_free()
+		return true
+	return false
