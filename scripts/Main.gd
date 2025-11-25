@@ -62,6 +62,7 @@ func _ready() -> void:
 	tukom_ui.target_coordinates_set.connect(_on_target_coordinates_set)
 	tukom_ui.fire_command_reset.connect(_on_fire_command_reset)
 	tukom_ui.bearing_line_activated.connect(_on_bearing_line_activated)
+	tukom_ui.bearing_deselected.connect(_on_bearing_deselected)
 
 	# Connect FIRE button from TukomGeneratorUI
 	var fire_button: Button = tukom_ui.get_node("Panel/HBoxContainer/FireButton")
@@ -103,6 +104,11 @@ func _position_observer_icon() -> void:
 ## Handles map tap for coordinate selection (Phase 2)
 ## Does NOT fire immediately - only sets coordinates in Tukom UI
 func _handle_map_tap(screen_pos: Vector2) -> void:
+	# Prevent coordinate selection if bearing line is active
+	if tukom_ui.is_bearing_active():
+		# Bearing line will handle this input
+		return
+
 	# Convert screen position to tile coordinates
 	var tile: Vector2i = map.world_to_grid(screen_pos)
 
@@ -144,6 +150,12 @@ func _on_fire_command_reset() -> void:
 func _on_bearing_line_activated() -> void:
 	# Update bearing line origin in case observer icon moved
 	bearing_line.set_origin(observer_icon.global_position)
+
+
+## Called when bearing is deselected (clicked piiru when locked)
+func _on_bearing_deselected() -> void:
+	# Can add additional cleanup here if needed
+	pass
 
 
 ## Handles FIRE button press

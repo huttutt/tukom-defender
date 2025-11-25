@@ -25,6 +25,7 @@ var current_distance: int = 0
 @onready var piiru_button: Button = $Panel/HBoxContainer/PiiruButton
 @onready var distance_label: Label = $Panel/HBoxContainer/DistanceLabel
 @onready var fire_button: Button = $Panel/HBoxContainer/FireButton
+@onready var add_bearing_prompt: Label = $Panel/HBoxContainer/AddBearingPrompt
 
 # Reference to Map node (set by Main.gd)
 var map: Node2D = null
@@ -40,11 +41,17 @@ func _ready() -> void:
 	# Connect piiru button
 	piiru_button.pressed.connect(_on_piiru_button_pressed)
 
+	# Connect bearing lock/unlock signals (will be emitted by BearingLine)
+	bearing_locked.connect(_on_bearing_locked)
+	bearing_unlocked.connect(_on_bearing_unlocked)
+
 
 ## Resets all fields to initial state
 func _reset_ui() -> void:
 	coord_label.text = ""
 	piiru_button.text = ""
+	piiru_button.visible = true
+	add_bearing_prompt.visible = false
 	distance_label.text = ""
 	fire_button.disabled = true
 	state = State.IDLE
@@ -60,6 +67,9 @@ func set_target_coordinates(tile: Vector2i) -> void:
 	target_tile = tile
 	current_coords = map.tile_to_mgrs(tile)
 	coord_label.text = current_coords
+
+	# Show pulsating "ADD BEARING" prompt
+	_show_add_bearing_prompt()
 
 	# Move to PARTIAL state (waiting for bearing and distance)
 	state = State.PARTIAL
@@ -78,10 +88,15 @@ func set_piiru(piiru: int) -> void:
 	_check_ready_state()
 
 
-## Called when piiru button is pressed - activates bearing line
+## Called when piiru button is pressed
 func _on_piiru_button_pressed() -> void:
 	if bearing_line == null:
 		push_error("TukomGeneratorUI: BearingLine reference not set")
+		return
+
+	# If bearing is locked, clicking piiru deselects bearing and returns to coord selection
+	if bearing_line.is_active and bearing_line.is_bearing_locked():
+		_deselect_bearing()
 		return
 
 	# Only activate if coordinates are set
@@ -90,6 +105,10 @@ func _on_piiru_button_pressed() -> void:
 
 	# Activate bearing line for dragging
 	bearing_line.activate()
+
+	# Hide the prompt
+	add_bearing_prompt.visible = false
+	piiru_button.visible = true
 
 	# Emit signal for Main to handle
 	bearing_line_activated.emit()
@@ -150,8 +169,60 @@ func is_ready() -> bool:
 	return state == State.READY
 
 
+## Shows pulsating "ADD BEARING" prompt
+func _show_add_bearing_prompt() -> void:
+	add_bearing_prompt.visible = true
+	piiru_button.visible = false
+
+	# Create pulsating animation
+	var tween: Tween = create_tween().set_loops()
+	tween.tween_property(add_bearing_prompt, "modulate:a", 0.3, 0.5)
+	tween.tween_property(add_bearing_prompt, "modulate:a", 1.0, 0.5)
+
+
+## Deselects bearing and returns to coordinate selection
+func _deselect_bearing() -> void:
+	# Clear bearing data
+	current_piiru = 0
+	piiru_button.text = ""
+
+	# Deactivate bearing line
+	if bearing_line != null:
+		bearing_line.deactivate()
+
+	# Show prompt again
+	_show_add_bearing_prompt()
+
+	# Update state
+	_check_ready_state()
+
+	# Emit signal for Main
+	bearing_deselected.emit()
+
+
+## Called when bearing is locked (mouseup)
+func _on_bearing_locked() -> void:
+	# Stop pulsating animation if any
+	add_bearing_prompt.visible = false
+	piiru_button.visible = true
+
+
+## Called when bearing is unlocked (click line)
+func _on_bearing_unlocked() -> void:
+	# Visual feedback could be added here
+	pass
+
+
+## Returns whether bearing line is currently active
+func is_bearing_active() -> bool:
+	return bearing_line != null and bearing_line.is_active
+
+
 # Signals
 signal target_coordinates_set(tile: Vector2i)
 signal fire_command_reset()
 signal fire_button_pressed()
 signal bearing_line_activated()
+signal bearing_locked()
+signal bearing_unlocked()
+signal bearing_deselected()

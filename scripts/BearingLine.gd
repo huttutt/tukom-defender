@@ -20,6 +20,7 @@ const NOTCH_LENGTH: float = 8.0
 
 # State
 var is_active: bool = false
+var is_locked: bool = false  # True when bearing is frozen in place
 var origin: Vector2 = Vector2.ZERO  # Observer icon position
 var angle: float = DEFAULT_ANGLE
 var length: float = 2000.0
@@ -66,8 +67,28 @@ func _input(event: InputEvent) -> void:
 	if not is_active:
 		return
 
-	# Handle mouse motion for dragging
-	if event is InputEventMouseMotion:
+	# Handle mouse button release to lock bearing
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+			# Mouse/touch released - lock the bearing
+			if not is_locked:
+				lock_bearing()
+			return
+
+		# Mouse/touch pressed - check if clicking on the line to unlock
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			if is_locked:
+				var mouse_pos: Vector2 = get_global_mouse_position()
+				if _is_click_near_line(mouse_pos):
+					unlock_bearing()
+					# Update angle immediately for new drag
+					_update_angle_from_mouse(mouse_pos)
+					_update_line_geometry()
+					_update_piiru_display()
+			return
+
+	# Handle mouse motion for dragging (only when not locked)
+	if event is InputEventMouseMotion and not is_locked:
 		var mouse_pos: Vector2 = get_global_mouse_position()
 		_update_angle_from_mouse(mouse_pos)
 		_update_line_geometry()
@@ -77,6 +98,7 @@ func _input(event: InputEvent) -> void:
 ## Activates the bearing line for dragging
 func activate() -> void:
 	is_active = true
+	is_locked = false
 	visible = true
 
 	# Set default angle (15-00 piiru = north)
@@ -90,7 +112,24 @@ func activate() -> void:
 ## Deactivates the bearing line
 func deactivate() -> void:
 	is_active = false
+	is_locked = false
 	visible = false
+
+
+## Locks bearing in place (called on mouseup)
+func lock_bearing() -> void:
+	is_locked = true
+	# Visual feedback could be added here (change line color, etc.)
+	if tukom_ui:
+		tukom_ui.bearing_locked.emit()
+
+
+## Unlocks bearing for adjustment (called on click line)
+func unlock_bearing() -> void:
+	is_locked = false
+	# Visual feedback could be added here
+	if tukom_ui:
+		tukom_ui.bearing_unlocked.emit()
 
 
 ## Sets the origin point (observer icon position)
@@ -236,3 +275,18 @@ func _closest_point_on_line(line_start: Vector2, line_end: Vector2, point: Vecto
 
 	var t: float = clamp(point_vec.dot(line_vec) / line_length_sq, 0.0, 1.0)
 	return line_start + line_vec * t
+
+
+## Checks if a click position is near the bearing line (for unlock detection)
+func _is_click_near_line(click_pos: Vector2) -> bool:
+	var line_end: Vector2 = origin + Vector2.RIGHT.rotated(angle) * length
+	var closest: Vector2 = _closest_point_on_line(origin, line_end, click_pos)
+	var distance: float = closest.distance_to(click_pos)
+
+	# Click threshold: within 20 pixels of line
+	return distance < 20.0
+
+
+## Returns whether bearing is currently locked
+func is_bearing_locked() -> bool:
+	return is_locked
