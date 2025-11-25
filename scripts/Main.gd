@@ -60,8 +60,10 @@ func _input(event: InputEvent) -> void:
 	# Handle left mouse button clicks for marker placement
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			print("DEBUG INPUT: Mouse click detected at screen pos: ", event.position)
 			# Use global mouse position to account for viewport/camera transforms
 			var mouse_pos: Vector2 = get_global_mouse_position()
+			print("DEBUG INPUT: Global mouse position: ", mouse_pos)
 			_handle_marker_placement(mouse_pos)
 
 
@@ -101,13 +103,19 @@ func _handle_marker_placement(screen_pos: Vector2) -> void:
 
 ## Handles FIRE button press
 func _on_fire_button_pressed() -> void:
+	print("DEBUG FIRE BUTTON: Pressed! marker_tile = ", marker_tile)
+
 	# Check if player has ammo
 	if ammo <= 0:
+		print("DEBUG FIRE BUTTON: No ammo!")
 		return
 
 	# Check if marker exists
 	if marker_tile.x < 0 or marker_tile.y < 0:
+		print("DEBUG FIRE BUTTON: No valid marker!")
 		return
+
+	print("DEBUG FIRE BUTTON: About to fire at marker_tile: ", marker_tile)
 
 	# Consume ammo
 	ammo -= 1
