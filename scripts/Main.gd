@@ -127,9 +127,14 @@ func _fire_at_marker() -> void:
 	max_tile.x = min(GameConfig.MAP_WIDTH - 1, max_tile.x)
 	max_tile.y = min(GameConfig.MAP_HEIGHT - 1, max_tile.y)
 
-	# Convert to world coordinates (top-left and bottom-right corners of the AOE area)
-	var aoe_min: Vector2 = Vector2(min_tile.x * GameConfig.TILE_SIZE, min_tile.y * GameConfig.TILE_SIZE)
-	var aoe_max: Vector2 = Vector2((max_tile.x + 1) * GameConfig.TILE_SIZE, (max_tile.y + 1) * GameConfig.TILE_SIZE)
+	# Convert to world coordinates using map's coordinate system
+	# Get top-left corner of min_tile and bottom-right corner of max_tile
+	var min_center: Vector2 = map.grid_to_world(min_tile)
+	var max_center: Vector2 = map.grid_to_world(max_tile)
+	var half_tile: float = GameConfig.TILE_SIZE / 2.0
+
+	var aoe_min: Vector2 = min_center - Vector2(half_tile, half_tile)
+	var aoe_max: Vector2 = max_center + Vector2(half_tile, half_tile)
 
 	print("DEBUG: AOE bounding box: ", aoe_min, " to ", aoe_max)
 	print("DEBUG: Enemy count: ", enemy_container.get_child_count())
