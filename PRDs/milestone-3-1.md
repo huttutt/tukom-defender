@@ -4,8 +4,8 @@
 
 **Last Updated**: 2025-11-25
 **Branch**: `feature/milestone-3-tukom-mechanics`
-**Completed Phases**: 1-3 (UI Foundation, Coordinate Selection, Bearing Line)
-**Next Phase**: Phase 4 (Distance Wheel)
+**Completed Phases**: 1-4 (UI, Coordinates, Bearing, Distance)
+**Next Phase**: Phase 5 (Perfect Alignment & FIRE Execution)
 
 ### What Works Now
 - ✅ Tukom Generator UI displayed at bottom of screen with doctrinal layout
@@ -14,20 +14,23 @@
 - ✅ MGRS coordinates displayed in Tukom UI coord field
 - ✅ Target marker appears at selected tile
 - ✅ Static fields "3 kertaa" and "ampukaa!" always visible
-- ✅ **Piiru field is interactive button (click to activate bearing line)**
-- ✅ **Bearing line extends from observer to screen edge**
-- ✅ **Orange-yellow 3px line with drop shadow**
-- ✅ **Draggable bearing line (mouse motion updates angle)**
-- ✅ **Rotation clamped to ±90° from default (15-00)**
-- ✅ **Piiru calculation (6000 mils system) updates in real-time**
-- ✅ **Distance notches at 250m, 500m, 750m, 1000m, 1250m, 1500m, 2000m**
-- ✅ **Perpendicular tick marks with distance labels**
-- ✅ **Perfect alignment detection logic implemented**
+- ✅ Piiru field is interactive button (click to activate bearing line)
+- ✅ Bearing line extends from observer to screen edge (no distance notches)
+- ✅ Orange-yellow 3px line with drop shadow
+- ✅ Draggable bearing line with lock/unlock on mouseup
+- ✅ Rotation clamped to ±90° from default (15-00)
+- ✅ Piiru calculation (6000 mils system) updates in real-time
+- ✅ Perfect alignment detection logic implemented
+- ✅ **Distance wheel with up/down arrows**
+- ✅ **25m increment steps (0m to 2000m range)**
+- ✅ **Mouse wheel scroll support for distance adjustment**
+- ✅ **Distance displays in yellow text matching UI style**
+- ✅ **Buttons disabled at min/max limits**
 
 ### What's Not Yet Implemented
-- ⏳ Distance wheel (25m increments)
 - ⏳ FIRE button enablement when all fields set (Phase 5)
 - ⏳ Perfect alignment bonus scoring execution (Phase 5)
+- ⏳ Visual polish and testing (Phase 6)
 
 ---
 
@@ -554,12 +557,12 @@ func reset_after_fire():
 1. **Phase 1**: UI Foundation & Observer Icon (2-3 hours) ✅ **COMPLETED**
 2. **Phase 2**: Coordinate Selection & Display (1-2 hours) ✅ **COMPLETED**
 3. **Phase 3**: Bearing Line & Piiru System (3-4 hours) ✅ **COMPLETED**
-4. **Phase 4**: Distance Wheel & Manual Entry (1-2 hours) ⏳ **PENDING**
+4. **Phase 4**: Distance Wheel & Manual Entry (1-2 hours) ✅ **COMPLETED**
 5. **Phase 5**: Perfect Alignment & FIRE Execution (2-3 hours) ⏳ **PENDING**
 6. **Phase 6**: Visual Polish & Testing (2-3 hours) ⏳ **PENDING**
 
 **Total Estimated Effort**: 11-17 hours
-**Completed So Far**: ~7-9 hours (Phases 1-3)
+**Completed So Far**: ~9-11 hours (Phases 1-4)
 
 ---
 
