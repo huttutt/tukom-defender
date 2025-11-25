@@ -130,9 +130,8 @@ func _fire_at_marker() -> void:
 			var enemy_tile: Vector2i = map.world_to_grid(enemy.position)
 			if enemy_tile == tile:
 				if enemy.has_method("take_damage"):
-					enemy.take_damage(1)
-					# Increment score if enemy was destroyed
-					if enemy.hp <= 0:
+					var was_destroyed: bool = enemy.take_damage(1)
+					if was_destroyed:
 						score += 1
 
 		# Damage crates
@@ -140,9 +139,8 @@ func _fire_at_marker() -> void:
 			var crate_tile: Vector2i = map.world_to_grid(crate.position)
 			if crate_tile == tile:
 				if crate.has_method("take_damage"):
-					crate.take_damage(1)
-					# Add ammo if crate was destroyed
-					if crate.hp <= 0:
+					var was_destroyed: bool = crate.take_damage(1)
+					if was_destroyed:
 						ammo += GameConfig.AMMO_PER_CRATE
 
 

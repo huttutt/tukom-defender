@@ -124,7 +124,10 @@ func _apply_current_direction(delta: float) -> void:
 
 
 ## Takes damage and destroys if HP reaches 0
-func take_damage(amount: int) -> void:
+## Returns true if entity was destroyed
+func take_damage(amount: int) -> bool:
 	hp -= amount
 	if hp <= 0:
 		queue_free()
+		return true
+	return false
