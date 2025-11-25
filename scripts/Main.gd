@@ -65,11 +65,15 @@ func _input(event: InputEvent) -> void:
 
 ## Handles marker placement when player clicks on map
 func _handle_marker_placement(screen_pos: Vector2) -> void:
+	print("DEBUG MARKER: Screen click at: ", screen_pos)
+
 	# Convert screen position to tile coordinates
 	var tile: Vector2i = map.world_to_grid(screen_pos)
+	print("DEBUG MARKER: Converted to tile: ", tile)
 
 	# Check if tile is inside map bounds
 	if not map.is_inside_map(tile):
+		print("DEBUG MARKER: Tile outside map bounds, ignoring")
 		return
 
 	# Remove old marker if exists
@@ -80,8 +84,12 @@ func _handle_marker_placement(screen_pos: Vector2) -> void:
 	# Create new marker
 	marker_tile = tile
 	marker_node = marker_scene.instantiate()
-	marker_node.position = map.grid_to_world(tile)
+	var marker_world_pos: Vector2 = map.grid_to_world(tile)
+	marker_node.position = marker_world_pos
 	add_child(marker_node)
+
+	print("DEBUG MARKER: Placed at world pos: ", marker_world_pos)
+	print("DEBUG MARKER: Marker node position: ", marker_node.position)
 
 	# Update UI
 	mgrs_label.text = map.tile_to_mgrs(tile)
@@ -207,10 +215,14 @@ func _on_enemy_spawn_timer_timeout() -> void:
 	var tile: Vector2i = Vector2i(x, 0)
 	var world_pos: Vector2 = map.grid_to_world(tile)
 
+	print("DEBUG SPAWN: Spawning enemy at tile ", tile, " -> world pos: ", world_pos)
+
 	# Instantiate and configure enemy
 	var enemy: Node2D = enemy_scene.instantiate()
 	enemy.position = world_pos
 	enemy_container.add_child(enemy)
+
+	print("DEBUG SPAWN: Enemy actual position after add_child: ", enemy.position)
 
 	# Connect enemy signal
 	enemy.reached_bottom.connect(_on_enemy_reached_bottom)
