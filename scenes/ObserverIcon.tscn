@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://ch8k9w2n5j4tx"]
+
+[ext_resource type="Script" path="res://scripts/ObserverIcon.gd" id="1_observer_icon_script"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_placeholder"]
+size = Vector2(1, 1)
+
+[node name="ObserverIcon" type="Node2D"]
+script = ExtResource("1_observer_icon_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(0.2, 0.5, 1, 1)
+scale = Vector2(20, 20)
+texture = SubResource("PlaceholderTexture2D_placeholder")
