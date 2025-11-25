@@ -13,10 +13,7 @@ const SHADOW_OFFSET: Vector2 = Vector2(2, 2)
 # Default bearing: 15-00 piiru = pointing up (north)
 const DEFAULT_ANGLE: float = -PI / 2.0  # -90 degrees = pointing up
 
-# Distance notch settings (1 tile = 100m)
-const TILE_SIZE_METERS: float = 100.0
-const NOTCH_POSITIONS: Array = [250, 500, 750, 1000, 1250, 1500, 2000]
-const NOTCH_LENGTH: float = 8.0
+# Distance handled separately in Phase 4 (Distance Wheel)
 
 # State
 var is_active: bool = false
@@ -28,8 +25,6 @@ var length: float = 2000.0
 # Line rendering nodes
 var main_line: Line2D = null
 var shadow_line: Line2D = null
-var notch_container: Node2D = null
-var label_container: Node2D = null
 
 # Reference to TukomGeneratorUI (set by Main.gd)
 var tukom_ui: Control = null
@@ -49,15 +44,6 @@ func _ready() -> void:
 	main_line.default_color = LINE_COLOR
 	main_line.z_index = 0
 	add_child(main_line)
-
-	# Create containers for notches and labels
-	notch_container = Node2D.new()
-	notch_container.z_index = 1
-	add_child(notch_container)
-
-	label_container = Node2D.new()
-	label_container.z_index = 2
-	add_child(label_container)
 
 	# Initially hidden
 	visible = false
@@ -166,53 +152,6 @@ func _update_line_geometry() -> void:
 	shadow_line.clear_points()
 	shadow_line.add_point(origin + SHADOW_OFFSET)
 	shadow_line.add_point(end_point + SHADOW_OFFSET)
-
-	# Update distance notches
-	_draw_distance_notches()
-
-
-## Draws distance notches and labels along the line
-func _draw_distance_notches() -> void:
-	# Clear existing notches and labels
-	for child in notch_container.get_children():
-		child.queue_free()
-	for child in label_container.get_children():
-		child.queue_free()
-
-	var direction: Vector2 = Vector2.RIGHT.rotated(angle)
-	var perpendicular: Vector2 = direction.rotated(PI / 2.0)
-
-	# Tile size in pixels (from GameConfig)
-	var tile_size_pixels: float = 64.0  # GameConfig.TILE_SIZE
-
-	for dist_meters in NOTCH_POSITIONS:
-		# Convert distance to pixels
-		var dist_pixels: float = (dist_meters / TILE_SIZE_METERS) * tile_size_pixels
-
-		if dist_pixels > length:
-			break
-
-		# Calculate notch position
-		var notch_pos: Vector2 = origin + direction * dist_pixels
-
-		# Draw notch (perpendicular line)
-		var notch_line: Line2D = Line2D.new()
-		notch_line.width = 2.0
-		notch_line.default_color = LINE_COLOR
-		var notch_start: Vector2 = notch_pos - perpendicular * (NOTCH_LENGTH / 2.0)
-		var notch_end: Vector2 = notch_pos + perpendicular * (NOTCH_LENGTH / 2.0)
-		notch_line.add_point(notch_start)
-		notch_line.add_point(notch_end)
-		notch_container.add_child(notch_line)
-
-		# Draw distance label
-		var label: Label = Label.new()
-		label.text = "%dm" % dist_meters
-		label.add_theme_font_size_override("font_size", 12)
-		label.add_theme_color_override("font_color", LINE_COLOR)
-		label.position = notch_pos + perpendicular * 12.0  # Offset from line
-		label.rotation = angle  # Align with line
-		label_container.add_child(label)
 
 
 ## Updates piiru display in TukomGeneratorUI
