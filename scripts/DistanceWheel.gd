@@ -26,22 +26,30 @@ func _ready() -> void:
 	_update_button_states()
 
 
-## Increments distance by step amount
+## Increments distance by step amount (wraps from max to min)
 func _on_up_pressed() -> void:
-	if current_distance < max_distance:
-		current_distance = min(current_distance + step, max_distance)
-		_update_display()
-		_update_button_states()
-		distance_changed.emit(current_distance)
+	current_distance += step
+
+	# Wrap around: if exceeds max, go to min
+	if current_distance > max_distance:
+		current_distance = min_distance
+
+	_update_display()
+	_update_button_states()
+	distance_changed.emit(current_distance)
 
 
-## Decrements distance by step amount
+## Decrements distance by step amount (wraps from min to max)
 func _on_down_pressed() -> void:
-	if current_distance > min_distance:
-		current_distance = max(current_distance - step, min_distance)
-		_update_display()
-		_update_button_states()
-		distance_changed.emit(current_distance)
+	current_distance -= step
+
+	# Wrap around: if goes below min, go to max
+	if current_distance < min_distance:
+		current_distance = max_distance
+
+	_update_display()
+	_update_button_states()
+	distance_changed.emit(current_distance)
 
 
 ## Handles scroll wheel input for quick adjustment
@@ -72,8 +80,9 @@ func _update_display() -> void:
 
 ## Updates button enabled/disabled states based on current value
 func _update_button_states() -> void:
-	up_button.disabled = (current_distance >= max_distance)
-	down_button.disabled = (current_distance <= min_distance)
+	# With wraparound, buttons are always enabled
+	up_button.disabled = false
+	down_button.disabled = false
 
 
 ## Resets distance to 0
