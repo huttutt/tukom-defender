@@ -136,23 +136,24 @@ func _fire_at_marker() -> void:
 
 	for tile in affected_tiles:
 		var tile_world_pos: Vector2 = map.grid_to_world(tile)
-		var tile_half_size: float = GameConfig.TILE_SIZE / 2.0
-		print("DEBUG: Checking tile ", tile, " at world pos ", tile_world_pos, " (half_size: ", tile_half_size, ")")
+		# Use full tile size plus a bit of margin to catch entities on tile edges
+		var hit_radius: float = GameConfig.TILE_SIZE * 0.7  # ~45 pixels for 64px tiles
+		print("DEBUG: Checking tile ", tile, " at world pos ", tile_world_pos, " (radius: ", hit_radius, ")")
 
 		# Check enemies - use distance check instead of exact tile match
 		for enemy in enemy_container.get_children():
 			# Check if enemy position is within tile bounds
 			var dist: float = enemy.position.distance_to(tile_world_pos)
-			print("DEBUG:   Enemy at ", enemy.position, " -> distance: ", dist, " (threshold: ", tile_half_size, ")")
-			if dist < tile_half_size and enemy not in enemies_to_damage:
+			print("DEBUG:   Enemy at ", enemy.position, " -> distance: ", dist, " (threshold: ", hit_radius, ")")
+			if dist < hit_radius and enemy not in enemies_to_damage:
 				enemies_to_damage.append(enemy)
 				print("DEBUG:   *** HIT! Enemy added to damage list")
 
 		# Check crates
 		for crate in crate_container.get_children():
 			var dist: float = crate.position.distance_to(tile_world_pos)
-			print("DEBUG:   Crate at ", crate.position, " -> distance: ", dist, " (threshold: ", tile_half_size, ")")
-			if dist < tile_half_size and crate not in crates_to_damage:
+			print("DEBUG:   Crate at ", crate.position, " -> distance: ", dist, " (threshold: ", hit_radius, ")")
+			if dist < hit_radius and crate not in crates_to_damage:
 				crates_to_damage.append(crate)
 				print("DEBUG:   *** HIT! Crate added to damage list")
 
