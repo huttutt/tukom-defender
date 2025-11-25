@@ -28,6 +28,6 @@ const LAYER_TERRAIN: int = 0  # TileMap layer for terrain tiles
 # Tukom (Fire Command) Settings
 const DISTANCE_STEP: int = 50  # Distance wheel increments in meters
 const MIN_DISTANCE: int = 0  # Minimum distance value
-const MAX_DISTANCE: int = 2000  # Maximum distance value (in meters)
+const MAX_DISTANCE: int = 1500  # Maximum distance value (in meters)
 const PERFECT_HIT_BONUS: int = 10  # Points for perfect alignment
 const NORMAL_HIT_POINTS: int = 1  # Points for regular hits

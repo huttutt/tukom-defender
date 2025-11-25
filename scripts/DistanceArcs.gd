@@ -10,7 +10,7 @@ const METERS_PER_TILE: float = 50.0  # 1 tile = 50 meters
 const ARC_COLOR: Color = Color(0, 0, 0, 1)  # Black
 const ARC_WIDTH: float = 2.0  # Make more visible
 const LABEL_COLOR: Color = Color(0, 0, 0, 1)  # Black
-const MAX_DISTANCE: int = 2000  # Maximum arc distance
+const MAX_DISTANCE: int = 1500  # Maximum arc distance
 
 # State
 var origin: Vector2 = Vector2.ZERO  # Observer icon position
