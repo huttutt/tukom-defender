@@ -69,14 +69,13 @@ theme_override_font_sizes/font_size = 18
 text = ""
 flat = true
 
-[node name="AddBearingPrompt" type="Label" parent="Panel/HBoxContainer"]
-custom_minimum_size = Vector2(100, 0)
+[node name="AddBearingPrompt" type="Button" parent="Panel/HBoxContainer"]
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.4, 0, 1)
 theme_override_font_sizes/font_size = 14
 text = "ADD BEARING"
-horizontal_alignment = 1
-vertical_alignment = 1
+flat = true
 visible = false
 
 [node name="Separator3" type="Label" parent="Panel/HBoxContainer"]

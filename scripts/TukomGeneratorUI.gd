@@ -25,7 +25,7 @@ var current_distance: int = 0
 @onready var piiru_button: Button = $Panel/HBoxContainer/PiiruButton
 @onready var distance_label: Label = $Panel/HBoxContainer/DistanceLabel
 @onready var fire_button: Button = $Panel/HBoxContainer/FireButton
-@onready var add_bearing_prompt: Label = $Panel/HBoxContainer/AddBearingPrompt
+@onready var add_bearing_prompt: Button = $Panel/HBoxContainer/AddBearingPrompt
 
 # Reference to Map node (set by Main.gd)
 var map: Node2D = null
@@ -40,6 +40,9 @@ func _ready() -> void:
 
 	# Connect piiru button
 	piiru_button.pressed.connect(_on_piiru_button_pressed)
+
+	# Connect add bearing prompt button
+	add_bearing_prompt.pressed.connect(_on_add_bearing_prompt_pressed)
 
 	# Connect bearing lock/unlock signals (will be emitted by BearingLine)
 	bearing_locked.connect(_on_bearing_locked)
@@ -88,6 +91,11 @@ func set_piiru(piiru: int) -> void:
 	_check_ready_state()
 
 
+## Called when "ADD BEARING" prompt button is pressed
+func _on_add_bearing_prompt_pressed() -> void:
+	_activate_bearing_line()
+
+
 ## Called when piiru button is pressed
 func _on_piiru_button_pressed() -> void:
 	if bearing_line == null:
@@ -99,6 +107,16 @@ func _on_piiru_button_pressed() -> void:
 		_deselect_bearing()
 		return
 
+	# Otherwise, treat as activating bearing (same as clicking prompt)
+	_activate_bearing_line()
+
+
+## Activates the bearing line for dragging
+func _activate_bearing_line() -> void:
+	if bearing_line == null:
+		push_error("TukomGeneratorUI: BearingLine reference not set")
+		return
+
 	# Only activate if coordinates are set
 	if target_tile.x < 0 or target_tile.y < 0:
 		return
@@ -106,7 +124,7 @@ func _on_piiru_button_pressed() -> void:
 	# Activate bearing line for dragging
 	bearing_line.activate()
 
-	# Hide the prompt
+	# Hide the prompt, show the piiru button
 	add_bearing_prompt.visible = false
 	piiru_button.visible = true
 
