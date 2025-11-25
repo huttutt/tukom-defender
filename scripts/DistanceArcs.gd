@@ -6,7 +6,7 @@ extends Node2D
 
 # Arc settings
 const ARC_INTERVAL_METERS: int = 250  # Distance between arcs
-const METERS_PER_TILE: float = 10.0  # 1 tile = 10 meters
+const METERS_PER_TILE: float = 50.0  # 1 tile = 50 meters
 const ARC_COLOR: Color = Color(0, 0, 0, 1)  # Black
 const ARC_WIDTH: float = 2.0  # Make more visible
 const LABEL_COLOR: Color = Color(0, 0, 0, 1)  # Black
