@@ -26,7 +26,7 @@ const INITIAL_AMMO: int = 20  # Starting ammunition
 const LAYER_TERRAIN: int = 0  # TileMap layer for terrain tiles
 
 # Tukom (Fire Command) Settings
-const DISTANCE_STEP: int = 25  # Distance wheel increments in meters
+const DISTANCE_STEP: int = 50  # Distance wheel increments in meters
 const MIN_DISTANCE: int = 0  # Minimum distance value
 const MAX_DISTANCE: int = 2000  # Maximum distance value (in meters)
 const PERFECT_HIT_BONUS: int = 10  # Points for perfect alignment
