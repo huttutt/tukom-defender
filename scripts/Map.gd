@@ -74,3 +74,18 @@ func get_elevation(tile: Vector2i) -> int:
 func is_inside_map(tile: Vector2i) -> bool:
 	return tile.x >= 0 and tile.x < GameConfig.MAP_WIDTH and \
 	       tile.y >= 0 and tile.y < GameConfig.MAP_HEIGHT
+
+
+## Converts tile coordinates to faux MGRS coordinate string
+## Top-left tile (0,0) is "37U DB 13224 79170"
+## Right +1 tile increases easting by 1
+## Down +1 tile increases northing by 1
+func tile_to_mgrs(tile: Vector2i) -> String:
+	const BASE_EASTING: int = 13224
+	const BASE_NORTHING: int = 79170
+
+	var easting: int = BASE_EASTING + tile.x
+	var northing: int = BASE_NORTHING + tile.y
+
+	# Format with zero-padding to 5 digits
+	return "37U DB %05d %05d" % [easting, northing]
